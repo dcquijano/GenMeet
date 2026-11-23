@@ -61,6 +61,9 @@ export function MeetingLobby({
     if (el.srcObject !== media.cameraStream) {
       el.srcObject = media.cameraStream;
     }
+    if (media.cameraStream) {
+      el.play().catch(() => {});
+    }
   }, [media.cameraStream]);
 
   const handleJoinSubmit = async (e: React.FormEvent, presentDirectly = false) => {

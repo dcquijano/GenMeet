@@ -80,6 +80,7 @@ try {
     }
 
     Copy-Item -Recurse -Force "src" (Join-Path $stageDir "src")
+    if (Test-Path "public") { Copy-Item -Recurse -Force "public" (Join-Path $stageDir "public") }
     Copy-Item -Recurse -Force "scripts" (Join-Path $stageDir "scripts")
     Copy-Item -Recurse -Force ".next" (Join-Path $stageDir ".next")
     Remove-Item -Recurse -Force (Join-Path $stageDir ".next\cache") -ErrorAction SilentlyContinue

@@ -15,7 +15,7 @@ import (
 
 const appManifestXML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-  <assemblyIdentity version="0.1.2.0" processorArchitecture="amd64" name="DariusCumpio.GenMeet" type="win32"/>
+  <assemblyIdentity version="0.1.3.0" processorArchitecture="amd64" name="DariusCumpio.GenMeet" type="win32"/>
   <description>GenMeet Real-Time WebRTC Meetings</description>
   <dependency>
     <dependentAssembly>
@@ -524,5 +524,27 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	fmt.Printf("Generated GenMeet icons & rsrc_windows_amd64.syso (%d bytes each)\n", len(sysoBytes))
+
+	// Generate PWA / iOS Apple Touch icons in public/
+	_ = os.MkdirAll("public", 0o755)
+	_ = os.WriteFile(filepath.Join("public", "apple-touch-icon.png"), encodePNG(renderIcon(180)), 0o644)
+	_ = os.WriteFile(filepath.Join("public", "icon-192.png"), encodePNG(renderIcon(192)), 0o644)
+	_ = os.WriteFile(filepath.Join("public", "icon-512.png"), encodePNG(renderIcon(512)), 0o644)
+
+	// Generate Android mipmap launcher icons for mobile/android
+	androidIcons := map[string]int{
+		"mipmap-mdpi":    48,
+		"mipmap-hdpi":    72,
+		"mipmap-xhdpi":   96,
+		"mipmap-xxhdpi":  144,
+		"mipmap-xxxhdpi": 192,
+	}
+	resRoot := filepath.Join("mobile", "android", "app", "src", "main", "res")
+	for bucket, sz := range androidIcons {
+		dir := filepath.Join(resRoot, bucket)
+		_ = os.MkdirAll(dir, 0o755)
+		_ = os.WriteFile(filepath.Join(dir, "ic_launcher.png"), encodePNG(renderIcon(sz)), 0o644)
+	}
+
+	fmt.Printf("Generated GenMeet icons, PWA/Android icons & rsrc_windows_amd64.syso (%d bytes each)\n", len(sysoBytes))
 }

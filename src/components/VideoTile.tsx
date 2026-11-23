@@ -49,6 +49,10 @@ export function VideoTile({
     if (el.srcObject !== stream) {
       el.srcObject = stream;
     }
+    if (stream) {
+      // Explicit play() avoids stalled first frames on iOS Safari and Android WebView
+      el.play().catch(() => {});
+    }
   }, [stream]);
 
   useEffect(() => {

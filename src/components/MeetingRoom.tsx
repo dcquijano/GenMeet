@@ -821,7 +821,7 @@ export function MeetingRoom({
       </div>
 
       {/* Bottom Floating Glassmorphic Control Dock */}
-      <footer className="relative flex flex-wrap items-center justify-between gap-2 px-4 pb-4 pt-1 sm:px-6">
+      <footer className="relative flex flex-wrap items-center justify-between gap-2 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-1 sm:px-6">
         {/* Left: Time + Meeting code */}
         <div className="hidden items-center gap-3 text-sm text-[#bdc1c6] md:flex">
           <span className="font-medium text-[#e8eaed]">{nowText}</span>
