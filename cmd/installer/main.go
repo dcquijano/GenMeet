@@ -824,6 +824,7 @@ func performInstall(opts installOptions, report func(pct int, msg string)) (winu
 	step(90, "Creating Windows shortcuts & Installed Apps entry...")
 	launcher := filepath.Join(opts.dir, "GenMeet-Launcher.exe")
 	repairExe := filepath.Join(opts.dir, "GenMeet-Repair.exe")
+	updaterExe := filepath.Join(opts.dir, "GenMeet-Updater.exe")
 	uninstExe := filepath.Join(opts.dir, "GenMeet-Uninstall.exe")
 	iconRef := launcher + ",0"
 
@@ -833,6 +834,9 @@ func performInstall(opts installOptions, report func(pct int, msg string)) (winu
 			_ = os.MkdirAll(menuDir, 0o755)
 			_ = winui.CreateShortcut(filepath.Join(menuDir, "GenMeet.lnk"), launcher, "", opts.dir, iconRef, "Launch GenMeet")
 			_ = winui.CreateShortcut(filepath.Join(menuDir, "GenMeet Terminal.lnk"), launcher, "--terminal", opts.dir, iconRef, "Open GenMeet Terminal")
+			if winui.FileExists(updaterExe) {
+				_ = winui.CreateShortcut(filepath.Join(menuDir, "Update GenMeet.lnk"), updaterExe, "", opts.dir, iconRef, "Check GitHub for GenMeet updates")
+			}
 			if winui.FileExists(repairExe) {
 				_ = winui.CreateShortcut(filepath.Join(menuDir, "Repair GenMeet.lnk"), repairExe, "", opts.dir, iconRef, "Repair GenMeet")
 			}
@@ -907,7 +911,7 @@ func copySelfCompanions(dest string) error {
 		return err
 	}
 	srcDir := filepath.Dir(selfExe)
-	for _, name := range []string{"GenMeet-Launcher.exe", "GenMeet-Repair.exe", "GenMeet-Uninstall.exe"} {
+	for _, name := range []string{"GenMeet-Launcher.exe", "GenMeet-Repair.exe", "GenMeet-Updater.exe", "GenMeet-Uninstall.exe"} {
 		src := filepath.Join(srcDir, name)
 		if winui.FileExists(src) {
 			data, err := os.ReadFile(src)

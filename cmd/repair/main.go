@@ -705,6 +705,7 @@ func performRepair(opts repairOptions, report func(pct int, msg string)) (winui.
 		step(92, "Restoring Desktop & Start Menu shortcuts...")
 		launcher := filepath.Join(opts.dir, "GenMeet-Launcher.exe")
 		repairExe := filepath.Join(opts.dir, "GenMeet-Repair.exe")
+		updaterExe := filepath.Join(opts.dir, "GenMeet-Updater.exe")
 		uninstExe := filepath.Join(opts.dir, "GenMeet-Uninstall.exe")
 		if winui.FileExists(launcher) {
 			iconRef := launcher + ",0"
@@ -716,6 +717,9 @@ func performRepair(opts repairOptions, report func(pct int, msg string)) (winui.
 				_ = os.MkdirAll(menuDir, 0o755)
 				_ = winui.CreateShortcut(filepath.Join(menuDir, "GenMeet.lnk"), launcher, "", opts.dir, iconRef, "Launch GenMeet")
 				_ = winui.CreateShortcut(filepath.Join(menuDir, "GenMeet Terminal.lnk"), launcher, "--terminal", opts.dir, iconRef, "Open GenMeet Terminal")
+				if winui.FileExists(updaterExe) {
+					_ = winui.CreateShortcut(filepath.Join(menuDir, "Update GenMeet.lnk"), updaterExe, "", opts.dir, iconRef, "Check GitHub for GenMeet updates")
+				}
 				if winui.FileExists(repairExe) {
 					_ = winui.CreateShortcut(filepath.Join(menuDir, "Repair GenMeet.lnk"), repairExe, "", opts.dir, iconRef, "Repair GenMeet")
 				}

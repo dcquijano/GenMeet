@@ -624,7 +624,7 @@ func performUninstall(opts uninstallOptions, report func(pct int, msg string)) {
 		"server.ts", "package.json", "package-lock.json", "tsconfig.json", "tsconfig.tsbuildinfo",
 		"next.config.mjs", "next.config.ts", "postcss.config.mjs", "eslint.config.mjs", "vitest.config.ts",
 		"go.mod", "install.bat", "Start-GenMeet.bat", "LICENSE", "README.md", "version.json",
-		"GenMeet-Launcher.exe", "GenMeet-Repair.exe",
+		"GenMeet-Launcher.exe", "GenMeet-Repair.exe", "GenMeet-Updater.exe",
 	}
 	if !opts.keepData {
 		targets = append(targets, "genmeet.instance.json", "logs")

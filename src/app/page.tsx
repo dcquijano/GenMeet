@@ -75,6 +75,10 @@ export default function HomePage() {
     virtualIp: string;
     lanUrls: string[];
   } | null>(null);
+  const [updateInfo, setUpdateInfo] = useState<{
+    latestVersion: string;
+    releaseUrl: string;
+  } | null>(null);
 
   useEffect(() => {
     const saved = window.localStorage.getItem("genmeet:displayName");
@@ -107,6 +111,20 @@ export default function HomePage() {
       })
       .catch(() => {
         // Non-fatal metadata fetch
+      });
+
+    fetch("/api/update-check")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.updateAvailable && data.latestVersion && data.releaseUrl) {
+          setUpdateInfo({
+            latestVersion: data.latestVersion,
+            releaseUrl: data.releaseUrl,
+          });
+        }
+      })
+      .catch(() => {
+        // Offline or unreachable GitHub is non-fatal
       });
   }, []);
 
@@ -203,6 +221,16 @@ export default function HomePage() {
                 <span className="h-2 w-2 rounded-full bg-[#1e8e3e]" aria-hidden="true" />
                 Node {instanceNet.virtualIp}
               </span>
+            )}
+            {updateInfo && (
+              <a
+                href={updateInfo.releaseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#1a73e8] px-3 py-1 text-xs font-medium text-white shadow-xs transition-colors hover:bg-[#1765cc]"
+              >
+                Update v{updateInfo.latestVersion} available
+              </a>
             )}
           </div>
 

@@ -1,6 +1,22 @@
 {
-  "name": "GenMeet",
-  "version": "0.1.1",
-  "author": "Darius Cumpio",
-  "description": "Real-time WebRTC video conferencing, screen sharing, and chat inspired by Google Meet."
+    "name":  "GenMeet (v0.1.2)",
+    "version":  "0.1.2",
+    "build":  "202611231404",
+    "releasedAt":  "2026-11-23",
+    "author":  "Darius Cumpio",
+    "latestCommit":  "8848f89",
+    "directSetupUrl":  "https://github.com/dcquijano/GenMeet/releases/download/v0.1.2/GenMeet-Setup-0.1.2.exe",
+    "directZipUrl":  "https://github.com/dcquijano/GenMeet/releases/download/v0.1.2/GenMeet-0.1.2-portable-windows-amd64.zip",
+    "fallbackSetupUrl":  "https://raw.githubusercontent.com/dcquijano/GenMeet/main/installer/GenMeet-Setup-0.1.2.exe",
+    "repoUrl":  "https://github.com/dcquijano/GenMeet",
+    "announcement":  "GenMeet (v0.1.2) - Latest updates: [8848f89] chore: remove legacy install.bat and Start-GenMeet.bat (2026-11-23); [438b773] feat: embed GenMeet PE icons/manifests in all EXEs and upgrade Repair/Uninstall to native Win32 wizards (2026-11-23); [8b35da5] release: v0.1.1 - fix Next.js startup delay with next.config.mjs, add in-place upgrade and release workflow (2026-11-23)",
+    "changelog":  [
+                      "[8848f89] chore: remove legacy install.bat and Start-GenMeet.bat (2026-11-23)",
+                      "[438b773] feat: embed GenMeet PE icons/manifests in all EXEs and upgrade Repair/Uninstall to native Win32 wizards (2026-11-23)",
+                      "[8b35da5] release: v0.1.1 - fix Next.js startup delay with next.config.mjs, add in-place upgrade and release workflow (2026-11-23)",
+                      "[c3218ce] fix: show Next/Back buttons and header in Setup Wizard and resolve repo parent from installer/ (2026-11-23)",
+                      "[86333b3] chore: merge initial GitHub README commit (2026-11-23)",
+                      "[5f09425] feat: GenMeet WebRTC clone and Darius DB-style Windows installer suite (2026-11-23)",
+                      "[a59c444] Initial commit (2026-11-23)"
+                  ]
 }

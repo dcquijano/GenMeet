@@ -15,7 +15,7 @@ import (
 
 const appManifestXML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-  <assemblyIdentity version="0.1.1.0" processorArchitecture="amd64" name="DariusCumpio.GenMeet" type="win32"/>
+  <assemblyIdentity version="0.1.2.0" processorArchitecture="amd64" name="DariusCumpio.GenMeet" type="win32"/>
   <description>GenMeet Real-Time WebRTC Meetings</description>
   <dependency>
     <dependentAssembly>
@@ -516,6 +516,7 @@ func main() {
 		filepath.Join("cmd", "launcher", "rsrc_windows_amd64.syso"),
 		filepath.Join("cmd", "repair", "rsrc_windows_amd64.syso"),
 		filepath.Join("cmd", "uninstaller", "rsrc_windows_amd64.syso"),
+		filepath.Join("cmd", "updater", "rsrc_windows_amd64.syso"),
 	}
 	for _, dst := range targets {
 		if err := os.WriteFile(dst, sysoBytes, 0o644); err != nil {
