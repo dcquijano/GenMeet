@@ -487,6 +487,9 @@ func wndProc(hwnd syscall.Handle, message uint32, wParam, lParam uintptr) uintpt
 		return 0
 
 	case wmCtlColorStat:
+		if syscall.Handle(lParam) == wiz.p1LicBox || syscall.Handle(lParam) == wiz.p3LogBox {
+			break
+		}
 		_, _, _ = procSetBkMode.Call(wParam, 1)
 		b, _, _ := procGetSysColorBrush.Call(colorBtnFace)
 		return b
@@ -581,13 +584,13 @@ func wndProc(hwnd syscall.Handle, message uint32, wParam, lParam uintptr) uintpt
 }
 
 func buildControls(hwnd syscall.Handle) {
-	iconCtl := createCtrl(0, "STATIC", "", ssIcon, 20, 14, 48, 48, hwnd, 0, 0)
+	iconCtl := createCtrl(0, "STATIC", "", wsVisible|ssIcon, 20, 14, 48, 48, hwnd, 0, 0)
 	if wiz.hIcon48 != 0 {
 		_, _, _ = procSendMessageW.Call(uintptr(iconCtl), stmSetIcon, uintptr(wiz.hIcon48), 0)
 	}
-	wiz.lblTitle = createCtrl(0, "STATIC", appFullTitle+" Setup", 0, 82, 16, 440, 24, hwnd, 0, wiz.fontTitle)
-	wiz.lblSubtitle = createCtrl(0, "STATIC", "Real-time WebRTC video meetings • Created by "+appAuthor, 0, 82, 42, 440, 20, hwnd, 0, wiz.fontUI)
-	createCtrl(0, "STATIC", "", ssEtchedHorz, 16, 72, 512, 2, hwnd, 0, 0)
+	wiz.lblTitle = createCtrl(0, "STATIC", appFullTitle+" Setup", wsVisible, 82, 16, 440, 24, hwnd, 0, wiz.fontTitle)
+	wiz.lblSubtitle = createCtrl(0, "STATIC", "Real-time WebRTC video meetings • Created by "+appAuthor, wsVisible, 82, 42, 440, 20, hwnd, 0, wiz.fontUI)
+	createCtrl(0, "STATIC", "", wsVisible|ssEtchedHorz, 16, 72, 512, 2, hwnd, 0, 0)
 
 	// Page 1
 	wiz.p1Intro = createCtrl(0, "STATIC",
@@ -596,8 +599,9 @@ func buildControls(hwnd syscall.Handle) {
 			"Please review the MIT License below to continue:",
 		0, 24, 86, 496, 78, hwnd, 0, wiz.fontUI)
 	wiz.p1LicBox = createCtrl(wsExClientEdge, "EDIT", mitLicenseText,
-		wsBorder|wsVScroll|esMultiline|esReadOnly, 24, 170, 496, 134, hwnd, 0, wiz.fontUI)
-	wiz.p1Accept = createCtrl(0, "BUTTON", "I accept the MIT License agreement", bsAutoCheckBox|wsTabStop, 24, 314, 340, 22, hwnd, idChkAccept, wiz.fontUI)
+		wsBorder|wsVScroll|esMultiline|esAutoVScroll|esReadOnly, 24, 170, 496, 134, hwnd, 0, wiz.fontMono)
+	wiz.p1Accept = createCtrl(0, "BUTTON", "I accept the MIT License agreement", bsAutoCheckBox|wsTabStop, 24, 314, 340, 22, hwnd, idChkAccept, wiz.fontBold)
+	setChecked(wiz.p1Accept, true)
 
 	// Page 2
 	wiz.p2LblDir = createCtrl(0, "STATIC", "Install GenMeet to folder:", 0, 24, 88, 400, 18, hwnd, 0, wiz.fontBold)
@@ -626,10 +630,10 @@ func buildControls(hwnd syscall.Handle) {
 	setChecked(wiz.p4ChkLaunch, true)
 
 	// Footer
-	createCtrl(0, "STATIC", "", ssEtchedHorz, 16, 354, 512, 2, hwnd, 0, 0)
-	wiz.btnBack = createCtrl(0, "BUTTON", "< Back", bsPushButton|wsTabStop, 250, 368, 86, 28, hwnd, idBtnBack, wiz.fontUI)
-	wiz.btnNext = createCtrl(0, "BUTTON", "Next >", bsDefPushBtn|wsTabStop, 344, 368, 86, 28, hwnd, idBtnNext, wiz.fontUI)
-	wiz.btnCancel = createCtrl(0, "BUTTON", "Cancel", bsPushButton|wsTabStop, 438, 368, 86, 28, hwnd, idBtnCancel, wiz.fontUI)
+	createCtrl(0, "STATIC", "", wsVisible|ssEtchedHorz, 16, 354, 512, 2, hwnd, 0, 0)
+	wiz.btnBack = createCtrl(0, "BUTTON", "< Back", wsVisible|bsPushButton|wsTabStop, 250, 368, 86, 28, hwnd, idBtnBack, wiz.fontUI)
+	wiz.btnNext = createCtrl(0, "BUTTON", "Next >", wsVisible|bsDefPushBtn|wsTabStop, 344, 368, 86, 28, hwnd, idBtnNext, wiz.fontBold)
+	wiz.btnCancel = createCtrl(0, "BUTTON", "Cancel", wsVisible|bsPushButton|wsTabStop, 438, 368, 86, 28, hwnd, idBtnCancel, wiz.fontUI)
 }
 
 func setPage(p int) {
@@ -655,6 +659,7 @@ func setPage(p int) {
 	case 1:
 		setText(wiz.lblSubtitle, "Step 1 of 3 — Welcome & License Agreement")
 		showCtrl(wiz.btnBack, false)
+		showCtrl(wiz.btnNext, true)
 		showCtrl(wiz.btnCancel, true)
 		setText(wiz.btnNext, "Next >")
 		enableCtrl(wiz.btnNext, isChecked(wiz.p1Accept))
@@ -668,10 +673,13 @@ func setPage(p int) {
 		}
 		showCtrl(wiz.btnBack, !wiz.repairMode)
 		enableCtrl(wiz.btnBack, !wiz.repairMode)
+		showCtrl(wiz.btnNext, true)
 		enableCtrl(wiz.btnNext, true)
 		showCtrl(wiz.btnCancel, true)
 	case 3:
 		setText(wiz.lblSubtitle, "Step 3 of 3 — Installing GenMeet...")
+		showCtrl(wiz.btnBack, false)
+		showCtrl(wiz.btnNext, true)
 		enableCtrl(wiz.btnBack, false)
 		enableCtrl(wiz.btnNext, false)
 		enableCtrl(wiz.btnCancel, false)
@@ -679,6 +687,7 @@ func setPage(p int) {
 		setText(wiz.lblSubtitle, "Setup Complete")
 		showCtrl(wiz.btnBack, false)
 		showCtrl(wiz.btnCancel, false)
+		showCtrl(wiz.btnNext, true)
 		enableCtrl(wiz.btnNext, true)
 		setText(wiz.btnNext, "Finish")
 	}

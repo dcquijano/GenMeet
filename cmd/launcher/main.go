@@ -32,6 +32,10 @@ func resolveRoot() string {
 		if winui.FileExists(filepath.Join(dir, "server.ts")) {
 			return dir
 		}
+		parent := filepath.Dir(dir)
+		if winui.FileExists(filepath.Join(parent, "server.ts")) {
+			return parent
+		}
 	}
 	if loc := winui.ReadHKCUString(winui.UninstallRegKey, "InstallLocation"); loc != "" {
 		if winui.FileExists(filepath.Join(loc, "server.ts")) {

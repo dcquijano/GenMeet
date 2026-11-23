@@ -27,6 +27,10 @@ func resolveRoot(argDir string) string {
 		if winui.FileExists(filepath.Join(dir, "server.ts")) {
 			return dir
 		}
+		parent := filepath.Dir(dir)
+		if winui.FileExists(filepath.Join(parent, "server.ts")) {
+			return parent
+		}
 	}
 	return winui.DefaultInstallDir
 }
