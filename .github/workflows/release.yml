@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag to publish (e.g. v0.1.1; defaults to v<version> from version.json)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: genmeet-release-windows
+  cancel-in-progress: true
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Resolve release tag
+        id: meta
+        shell: pwsh
+        run: |
+          $tag = ""
+          if ("${{ github.ref }}".StartsWith("refs/tags/v")) {
+            $tag = "${{ github.ref_name }}"
+          } elseif ("${{ inputs.release_tag }}".Trim() -ne "") {
+            $tag = "${{ inputs.release_tag }}".Trim()
+          } else {
+            $vj = Get-Content "version.json" -Raw -Encoding UTF8 | ConvertFrom-Json
+            $tag = "v" + ([string]$vj.version).Trim().TrimStart("v")
+          }
+          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "Resolved release tag: $tag"
+
+      - name: Install dependencies & verify
+        shell: pwsh
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+          npm run lint
+          go vet ./...
+          go test ./...
+
+      - name: Build Windows Installer Suite & Portable ZIP
+        shell: pwsh
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File installer/build-all.ps1
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: GenMeet-windows-amd64
+          path: |
+            dist/GenMeet-Setup-*.exe
+            dist/GenMeet-*-portable-windows-amd64.zip
+            installer/GenMeet-Launcher.exe
+            installer/GenMeet-Repair.exe
+            installer/GenMeet-Uninstall.exe
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: GenMeet ${{ steps.meta.outputs.tag }}
+          generate_release_notes: true
+          files: |
+            dist/GenMeet-Setup-*.exe
+            dist/GenMeet-*-portable-windows-amd64.zip
+            installer/GenMeet-Launcher.exe
+            installer/GenMeet-Repair.exe
+            installer/GenMeet-Uninstall.exe

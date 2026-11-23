@@ -61,7 +61,7 @@ try {
 
     foreach ($file in @(
         "server.ts", "package.json", "package-lock.json",
-        "next.config.ts", "tsconfig.json", "postcss.config.mjs",
+        "next.config.mjs", "tsconfig.json", "postcss.config.mjs",
         "Start-GenMeet.bat", "LICENSE", "README.md", "version.json"
     )) {
         if (Test-Path $file) { Copy-Item -Force $file $stageDir }

@@ -272,14 +272,37 @@ func main() {
 
 	if !forceUpdate {
 		if existingDir := winui.DetectExistingInstallation(installDir); existingDir != "" {
+			installedVer := winui.ReadHKCUString(uninstallKey, "DisplayVersion")
+			isUpgrade := installedVer != "" && installedVer != appVersion
 			if silent {
-				if !repairMode {
+				if !repairMode && !isUpgrade {
 					os.Exit(1)
 				}
 				installDir = existingDir
 			} else if repairMode {
 				wiz.repairMode = true
 				wiz.finalDir = existingDir
+			} else if isUpgrade {
+				ans := winui.MessageBox(
+					fmt.Sprintf("%s Setup — Upgrade from v%s", appFullTitle, installedVer),
+					fmt.Sprintf(
+						"GenMeet (v%s) is currently installed at:\n%s\n\nA newer version (%s) is ready!\n\n• Click YES to UPGRADE in-place to v%s (keeps your Virtual Node ID & settings)\n• Click NO to launch GenMeet now\n• Click CANCEL to exit Setup",
+						installedVer, existingDir, appFullTitle, appVersion,
+					),
+					winui.MBYesNoCancel|winui.MBIconInfo,
+				)
+				if ans == winui.IDYES {
+					wiz.repairMode = true
+					wiz.finalDir = existingDir
+				} else {
+					if ans == winui.IDNO {
+						launcher := filepath.Join(existingDir, "GenMeet-Launcher.exe")
+						cmd := exec.Command(launcher)
+						cmd.Dir = existingDir
+						_ = cmd.Start()
+					}
+					return
+				}
 			} else {
 				ans := winui.MessageBox(
 					appFullTitle+" Setup — Already Installed",
@@ -759,6 +782,8 @@ func performInstall(opts installOptions, report func(pct int, msg string)) (winu
 
 	if len(embeddedPayloadZip) > 0 {
 		step(22, "Extracting GenMeet application bundle...")
+		// Remove legacy next.config.ts so Next.js uses next.config.mjs without runtime TypeScript install
+		_ = os.Remove(filepath.Join(opts.dir, "next.config.ts"))
 		if err := extractZipBytes(embeddedPayloadZip, opts.dir); err != nil {
 			return winui.InstanceConfig{}, fmt.Errorf("extract payload: %w", err)
 		}

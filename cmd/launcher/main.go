@@ -166,7 +166,7 @@ func main() {
 	}
 
 	ready := false
-	for i := 0; i < 45; i++ {
+	for i := 0; i < 60; i++ {
 		if isServerHealthy(cfg.Port) {
 			ready = true
 			break

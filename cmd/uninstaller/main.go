@@ -100,7 +100,7 @@ func main() {
 	targets := []string{
 		"src", "scripts", "public", ".next", "node_modules", "build", "internal", "cmd", "installer",
 		"server.ts", "package.json", "package-lock.json", "tsconfig.json", "tsconfig.tsbuildinfo",
-		"next.config.ts", "postcss.config.mjs", "eslint.config.mjs", "vitest.config.ts",
+		"next.config.mjs", "next.config.ts", "postcss.config.mjs", "eslint.config.mjs", "vitest.config.ts",
 		"go.mod", "install.bat", "Start-GenMeet.bat", "LICENSE", "README.md", "version.json",
 		"GenMeet-Launcher.exe", "GenMeet-Repair.exe",
 	}
