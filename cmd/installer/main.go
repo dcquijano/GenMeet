@@ -634,7 +634,7 @@ func buildControls(hwnd syscall.Handle) {
 	wiz.p2ChkDesk = createCtrl(0, "BUTTON", "Create a Desktop shortcut (GenMeet)", bsAutoCheckBox|wsTabStop, 32, 178, 460, 22, hwnd, idChkDesktop, wiz.fontUI)
 	wiz.p2ChkMenu = createCtrl(0, "BUTTON", "Create Start Menu shortcuts (Launcher, Terminal, Repair, Uninstall)", bsAutoCheckBox|wsTabStop, 32, 206, 480, 22, hwnd, idChkStartMnu, wiz.fontUI)
 	wiz.p2ChkBoot = createCtrl(0, "BUTTON", "Start GenMeet automatically when Windows signs in", bsAutoCheckBox|wsTabStop, 32, 234, 460, 22, hwnd, idChkBoot, wiz.fontUI)
-	wiz.p2ChkResetCfg = createCtrl(0, "BUTTON", "Generate a fresh unique Virtual Node ID & free port", bsAutoCheckBox|wsTabStop, 32, 262, 460, 22, hwnd, idChkResetCfg, wiz.fontUI)
+	wiz.p2ChkResetCfg = createCtrl(0, "BUTTON", "Generate a fresh unique Virtual Node ID && free port", bsAutoCheckBox|wsTabStop, 32, 262, 460, 22, hwnd, idChkResetCfg, wiz.fontUI)
 	setChecked(wiz.p2ChkDesk, true)
 	setChecked(wiz.p2ChkMenu, true)
 	setChecked(wiz.p2ChkResetCfg, !wiz.repairMode || wiz.resetConfigs)

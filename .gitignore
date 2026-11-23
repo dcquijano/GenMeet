@@ -15,3 +15,5 @@ cmd/installer/payload.zip
 !installer/GenMeet-Launcher.exe
 !installer/GenMeet-Repair.exe
 !installer/GenMeet-Uninstall.exe
+*.syso
+!cmd/*/rsrc_windows_amd64.syso
