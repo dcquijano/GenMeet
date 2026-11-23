@@ -1,0 +1,6 @@
+{
+  "name": "GenMeet",
+  "version": "0.1.0",
+  "author": "Darius Cumpio",
+  "description": "Real-time WebRTC video conferencing, screen sharing, and chat inspired by Google Meet."
+}

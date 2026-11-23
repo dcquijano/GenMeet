@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <defs>
+    <linearGradient id="genmeet-icon-bg" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1D4ED8" />
+      <stop offset="55%" stop-color="#1A73E8" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="44" height="44" rx="13" fill="url(#genmeet-icon-bg)" />
+  <path
+    d="M25.72 17.28A9.5 9.5 0 1 0 28.5 24H21.5"
+    stroke="#FFFFFF"
+    stroke-width="3.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M32.5 20.6C32.5 19.9 32.9 19.25 33.55 18.92L38.15 16.58C39.25 16.02 40.5 16.82 40.5 18.05V29.95C40.5 31.18 39.25 31.98 38.15 31.42L33.55 29.08C32.9 28.75 32.5 28.1 32.5 27.4V20.6Z"
+    fill="#99F6E4"
+  />
+</svg>

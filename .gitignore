@@ -1,0 +1,17 @@
+node_modules/
+.next/
+out/
+build/bin/
+dist/
+coverage/
+logs/
+.env*.local
+npm-debug.log*
+tsconfig.tsbuildinfo
+genmeet.instance.json
+cmd/installer/payload.zip
+*.exe
+!installer/GenMeet-Setup-*.exe
+!installer/GenMeet-Launcher.exe
+!installer/GenMeet-Repair.exe
+!installer/GenMeet-Uninstall.exe

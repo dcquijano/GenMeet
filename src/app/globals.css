@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --meet-bg-dark: #202124;
+    --meet-surface-dark: #3c4043;
+    --meet-surface-dark-hover: #4a4e52;
+    --meet-blue: #1a73e8;
+    --meet-blue-light: #8ab4f8;
+    --meet-blue-pill: #a8c7fa;
+    --meet-red: #ea4335;
+    --meet-red-hover: #d93025;
+  }
+
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: "Plus Jakarta Sans", "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@keyframes floatReaction {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.75);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-16px) scale(1.1);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-180px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-240px) scale(0.9);
+  }
+}
+
+.animate-float-reaction {
+  animation: floatReaction 2.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-reaction {
+    animation: none;
+    opacity: 1;
+  }
+}
