@@ -256,9 +256,15 @@ export function MeetingRoom({
 
   const handleCopyMeetingLink = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      const isLocalhost =
+        window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      const shareUrl =
+        isLocalhost && instanceNet?.lanUrls[0]
+          ? `${instanceNet.lanUrls[0]}/meet/${roomId}`
+          : window.location.href;
+      await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      showToast("Copied meeting link");
+      showToast(isLocalhost && instanceNet?.lanUrls[0] ? "Copied LAN/Mobile invite link" : "Copied meeting link");
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
       showToast("Copy failed — use the address bar URL");

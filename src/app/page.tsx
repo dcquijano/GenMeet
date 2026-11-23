@@ -179,12 +179,18 @@ export default function HomePage() {
     setEditingName(false);
   };
 
-  const laterFullUrl =
-    laterLinkCode && typeof window !== "undefined"
-      ? `${window.location.origin}/meet/${laterLinkCode}`
-      : laterLinkCode
-      ? `/meet/${laterLinkCode}`
+  const isLocalhost =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+  const shareBaseOrigin =
+    isLocalhost && instanceNet?.lanUrls[0]
+      ? instanceNet.lanUrls[0]
+      : typeof window !== "undefined"
+      ? window.location.origin
       : "";
+  const laterFullUrl = laterLinkCode
+    ? `${shareBaseOrigin}/meet/${laterLinkCode}`
+    : "";
 
   const handleCopyLaterUrl = async () => {
     if (!laterFullUrl) return;

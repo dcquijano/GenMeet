@@ -45,7 +45,19 @@ export function MeetingLobby({
   const [joining, setJoining] = useState(false);
   const [copied, setCopied] = useState(false);
   const [mirrored, setMirrored] = useState(true);
+  const [lanBaseUrl, setLanBaseUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    fetch("/api/instance")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (Array.isArray(data?.lanUrls) && data.lanUrls[0]) {
+          setLanBaseUrl(data.lanUrls[0]);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const { isSpeaking, audioLevel } = useActiveSpeaker(media.cameraStream, media.audioEnabled);
 
@@ -84,7 +96,11 @@ export function MeetingLobby({
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      const isLocalhost =
+        window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      const shareUrl =
+        isLocalhost && lanBaseUrl ? `${lanBaseUrl}/meet/${roomId}` : window.location.href;
+      await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
