@@ -5,9 +5,11 @@ import {
   Captions,
   Check,
   Copy,
+  Globe,
   Hand,
   Info,
   LayoutGrid,
+  Loader2,
   MessageSquare,
   Mic,
   MicOff,
@@ -15,6 +17,7 @@ import {
   MonitorUp,
   MoreVertical,
   PhoneOff,
+  Power,
   Send,
   ShieldCheck,
   Smile,
@@ -25,6 +28,7 @@ import {
 } from "lucide-react";
 import { VideoTile } from "@/components/VideoTile";
 import type { MediaDevicesState } from "@/hooks/useMediaDevices";
+import { usePublicTunnel } from "@/hooks/usePublicTunnel";
 import type { RemotePeerState } from "@/hooks/useWebRTCRoom";
 import { getAvatarColor, getInitials } from "@/lib/meeting-code";
 import {
@@ -116,6 +120,7 @@ export function MeetingRoom({
     virtualIp: string;
     lanUrls: string[];
   } | null>(null);
+  const tunnel = usePublicTunnel();
 
   useEffect(() => {
     fetch("/api/instance")
@@ -254,17 +259,33 @@ export function MeetingRoom({
     };
   }, [captionsEnabled, media.audioEnabled]);
 
-  const handleCopyMeetingLink = async () => {
-    try {
+  const getActiveShareUrl = () => {
+    if (tunnel.publicUrl) {
+      return `${tunnel.publicUrl}/meet/${roomId}`;
+    }
+    if (typeof window !== "undefined") {
       const isLocalhost =
         window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-      const shareUrl =
-        isLocalhost && instanceNet?.lanUrls[0]
-          ? `${instanceNet.lanUrls[0]}/meet/${roomId}`
-          : window.location.href;
+      if (isLocalhost && instanceNet?.lanUrls[0]) {
+        return `${instanceNet.lanUrls[0]}/meet/${roomId}`;
+      }
+      return window.location.href;
+    }
+    return `/meet/${roomId}`;
+  };
+
+  const handleCopyMeetingLink = async () => {
+    try {
+      const shareUrl = getActiveShareUrl();
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      showToast(isLocalhost && instanceNet?.lanUrls[0] ? "Copied LAN/Mobile invite link" : "Copied meeting link");
+      showToast(
+        tunnel.publicUrl
+          ? "Copied Public 5G HTTPS invite link"
+          : shareUrl.includes("192.168.") || shareUrl.includes("10.") || shareUrl.includes("172.")
+          ? "Copied LAN/Mobile invite link"
+          : "Copied meeting link"
+      );
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
       showToast("Copy failed — use the address bar URL");
@@ -390,6 +411,18 @@ export function MeetingRoom({
             <ShieldCheck className="h-3.5 w-3.5 text-[#81c995]" aria-hidden="true" />
             Encrypted P2P
           </span>
+
+          {tunnel.publicUrl && (
+            <button
+              type="button"
+              onClick={() => void handleCopyMeetingLink()}
+              title="Copy Public 5G HTTPS invite link"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#137333]/30 px-3 py-1.5 text-xs font-medium text-[#81c995] ring-1 ring-[#81c995]/40 hover:bg-[#137333]/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#81c995]"
+            >
+              <Globe className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Public HTTPS Live</span>
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -625,17 +658,12 @@ export function MeetingRoom({
               <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5 text-sm">
                 <div>
                   <h3 className="text-xs font-semibold uppercase tracking-wide text-[#5f6368]">
-                    Joining info (LAN / Mobile ready)
+                    {tunnel.publicUrl
+                      ? "Joining info (Public 5G / Any Wi-Fi HTTPS)"
+                      : "Joining info (LAN / Mobile ready)"}
                   </h3>
                   <p className="mt-2 break-all rounded-xl bg-[#f8f9fa] p-3 font-mono text-xs text-[#3c4043]">
-                    {typeof window !== "undefined" &&
-                    (window.location.hostname === "localhost" ||
-                      window.location.hostname === "127.0.0.1") &&
-                    instanceNet?.lanUrls[0]
-                      ? `${instanceNet.lanUrls[0]}/meet/${roomId}`
-                      : typeof window !== "undefined"
-                      ? window.location.href
-                      : `/meet/${roomId}`}
+                    {getActiveShareUrl()}
                   </p>
                   <button
                     type="button"
@@ -647,9 +675,93 @@ export function MeetingRoom({
                     ) : (
                       <Copy className="h-4 w-4" aria-hidden="true" />
                     )}
-                    Copy joining info
+                    {tunnel.publicUrl ? "Copy 5G HTTPS joining info" : "Copy joining info"}
                   </button>
                 </div>
+
+                {/* One-click Go Public (5G / Internet HTTPS) card */}
+                {(tunnel.canManage || tunnel.publicUrl) && (
+                  <div
+                    className={`rounded-2xl border p-3.5 text-xs space-y-2 ${
+                      tunnel.publicUrl
+                        ? "border-[#ceead6] bg-[#e6f4ea]/70 text-[#0d652d]"
+                        : "border-[#d2e3fc] bg-[#f4f8ff] text-[#3c4043]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="inline-flex items-center gap-1.5 font-semibold">
+                        <Globe className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        {tunnel.publicUrl
+                          ? "Public HTTPS Active (5G / Any Wi-Fi)"
+                          : "Go Public (5G / Different Wi-Fi HTTPS)"}
+                      </span>
+                    </div>
+
+                    {tunnel.publicUrl ? (
+                      <>
+                        <p className="break-all rounded-lg bg-white px-2.5 py-2 font-mono text-[11px] text-[#0d652d]">
+                          {`${tunnel.publicUrl}/meet/${roomId}`}
+                        </p>
+                        <p className="text-[11px]">
+                          Anyone on <strong>5G, another Wi-Fi, Android, or iPhone</strong> can join with full camera &amp; mic.
+                        </p>
+                        {tunnel.canManage && (
+                          <button
+                            type="button"
+                            onClick={() => void tunnel.stopTunnel()}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-[#f2b8b5] bg-white px-3 py-1.5 text-xs font-semibold text-[#b3261e] hover:bg-[#fce8e6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b3261e]"
+                          >
+                            <Power className="h-3.5 w-3.5" aria-hidden="true" />
+                            Stop Public Link
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-[11px] text-[#5f6368]">
+                          Starts an automatic Cloudflare HTTPS link so phones on <strong>5G or another Wi-Fi</strong> can join with live camera &amp; mic.
+                        </p>
+                        {tunnel.isBusy ? (
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-[#1967d2]">
+                              <Loader2
+                                className="h-3.5 w-3.5 motion-safe:animate-spin"
+                                aria-hidden="true"
+                              />
+                              {tunnel.status === "downloading"
+                                ? "Downloading tunnel helper..."
+                                : "Starting HTTPS tunnel..."}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => void tunnel.stopTunnel()}
+                              className="rounded-full border border-[#dadce0] bg-white px-2.5 py-1.5 text-xs font-medium text-[#3c4043] hover:bg-[#f1f3f4]"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => void tunnel.startTunnel()}
+                            className="inline-flex items-center gap-1.5 rounded-full bg-[#137333] px-3.5 py-2 text-xs font-semibold text-white hover:bg-[#0d652d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137333]"
+                          >
+                            <Globe className="h-3.5 w-3.5" aria-hidden="true" />
+                            Go Public (5G / Internet HTTPS)
+                          </button>
+                        )}
+                        {tunnel.error && (
+                          <p
+                            role="alert"
+                            className="rounded-lg bg-[#fce8e6] px-2.5 py-1.5 text-[11px] text-[#b3261e]"
+                          >
+                            {tunnel.error}
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
 
                 <div className="border-t border-[#e8eaed] pt-4 text-xs text-[#5f6368] space-y-2.5">
                   <p>
@@ -665,7 +777,7 @@ export function MeetingRoom({
                       </p>
                       {instanceNet.lanUrls[0] && (
                         <p className="break-all">
-                          LAN invite:{" "}
+                          LAN invite (same Wi-Fi):{" "}
                           <strong className="font-mono text-[#202124]">
                             {`${instanceNet.lanUrls[0]}/meet/${roomId}`}
                           </strong>
@@ -680,11 +792,15 @@ export function MeetingRoom({
                 </div>
 
                 <div className="rounded-2xl border border-[#d2e3fc] bg-[#f4f8ff] p-3.5 text-xs text-[#3c4043] space-y-1.5">
-                  <p className="font-semibold text-[#1967d2]">Connect PC &harr; Phone (Same Wi-Fi)</p>
+                  <p className="font-semibold text-[#1967d2]">
+                    {tunnel.publicUrl
+                      ? "Connect PC ↔ Phone (5G or Any Wi-Fi)"
+                      : "Connect PC ↔ Phone (Same Wi-Fi)"}
+                  </p>
                   <p>
-                    <strong>PC &rarr; Phone:</strong> Open <strong>GenMeet Mobile</strong> on your phone, paste{" "}
+                    <strong>PC &rarr; Phone:</strong> Open <strong>GenMeet Mobile</strong> (or Safari/Chrome) on your phone, paste{" "}
                     <code className="rounded bg-white px-1 py-0.5 font-mono">
-                      {instanceNet?.lanUrls[0] ?? "http://<PC-IP>:3000"}
+                      {tunnel.publicUrl ?? instanceNet?.lanUrls[0] ?? "http://<PC-IP>:3000"}
                     </code>{" "}
                     as Server URL and <code className="rounded bg-white px-1 py-0.5 font-mono">{roomId}</code> as Meeting Code.
                   </p>
@@ -692,9 +808,12 @@ export function MeetingRoom({
                     <strong>Phone &rarr; PC:</strong> Start a room on your phone, then enter its code on your PC at{" "}
                     <code className="rounded bg-white px-1 py-0.5 font-mono">http://localhost:3000</code>.
                   </p>
-                  <p className="text-[11px] text-[#5f6368]">
-                    For live mobile camera &amp; mic over Wi-Fi/internet, use an HTTPS tunnel (e.g. Cloudflare Tunnel).
-                  </p>
+                  {!tunnel.publicUrl && (
+                    <p className="text-[11px] text-[#5f6368]">
+                      Need 5G, different Wi-Fi, or live phone camera &amp; mic? Click{" "}
+                      <strong>Go Public (5G / Internet HTTPS)</strong> above.
+                    </p>
+                  )}
                 </div>
               </div>
             )}

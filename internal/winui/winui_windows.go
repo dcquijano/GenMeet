@@ -23,8 +23,8 @@ var DefaultIconPNG []byte
 
 const (
 	AppShortName      = "GenMeet"
-	AppFullTitle      = "GenMeet (v0.1.5)"
-	AppVersion        = "0.1.5"
+	AppFullTitle      = "GenMeet (v0.1.6)"
+	AppVersion        = "0.1.6"
 	AppAuthor         = "Darius Cumpio"
 	DefaultInstallDir = `C:\GenMeet`
 	UninstallRegKey   = `Software\Microsoft\Windows\CurrentVersion\Uninstall\GenMeet`

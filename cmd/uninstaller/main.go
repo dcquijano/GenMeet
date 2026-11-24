@@ -620,7 +620,7 @@ func performUninstall(opts uninstallOptions, report func(pct int, msg string)) {
 
 	step(78, "Removing GenMeet application files...")
 	targets := []string{
-		"src", "scripts", "public", ".next", "node_modules", "build", "internal", "cmd", "installer",
+		"src", "scripts", "public", ".next", "node_modules", "bin", "build", "internal", "cmd", "installer",
 		"server.ts", "package.json", "package-lock.json", "tsconfig.json", "tsconfig.tsbuildinfo",
 		"next.config.mjs", "next.config.ts", "postcss.config.mjs", "eslint.config.mjs", "vitest.config.ts",
 		"go.mod", "install.bat", "Start-GenMeet.bat", "LICENSE", "README.md", "version.json",

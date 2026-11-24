@@ -5,6 +5,7 @@ import next from "next";
 import { Server as SocketIOServer } from "socket.io";
 import { DEFAULT_INSTANCE_CONFIG_PATH, getInstanceNetworkInfo } from "./src/lib/instance-info";
 import { createSignalingController } from "./src/server/signaling";
+import { getTunnelManager } from "./src/server/tunnel";
 
 const isProd = process.argv.includes("--prod") || process.env.NODE_ENV === "production";
 const hostname = process.env.HOSTNAME ?? "0.0.0.0";
@@ -71,6 +72,7 @@ async function main() {
   });
 
   const shutdown = () => {
+    getTunnelManager().stop();
     removePidFile();
     io.close(() => {
       httpServer.close(() => {
@@ -81,10 +83,14 @@ async function main() {
 
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
-  process.on("exit", removePidFile);
+  process.on("exit", () => {
+    getTunnelManager().stop();
+    removePidFile();
+  });
 }
 
 main().catch((err) => {
+  getTunnelManager().stop();
   removePidFile();
   console.error("Failed to start GenMeet server:", err);
   process.exit(1);

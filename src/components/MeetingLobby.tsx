@@ -7,9 +7,12 @@ import {
   Check,
   Copy,
   FlipHorizontal2,
+  Globe,
+  Loader2,
   Mic,
   MicOff,
   MonitorUp,
+  Power,
   Sparkles,
   Video,
   VideoOff,
@@ -18,6 +21,7 @@ import {
 import { GenMeetLogo } from "@/components/GenMeetLogo";
 import { useActiveSpeaker } from "@/hooks/useActiveSpeaker";
 import type { MediaDevicesState } from "@/hooks/useMediaDevices";
+import { usePublicTunnel } from "@/hooks/usePublicTunnel";
 import { getAvatarColor, getInitials } from "@/lib/meeting-code";
 import type { ParticipantInfo } from "@/lib/signaling-schema";
 
@@ -47,6 +51,7 @@ export function MeetingLobby({
   const [mirrored, setMirrored] = useState(true);
   const [lanBaseUrl, setLanBaseUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const tunnel = usePublicTunnel();
 
   useEffect(() => {
     fetch("/api/instance")
@@ -98,8 +103,11 @@ export function MeetingLobby({
     try {
       const isLocalhost =
         window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-      const shareUrl =
-        isLocalhost && lanBaseUrl ? `${lanBaseUrl}/meet/${roomId}` : window.location.href;
+      const shareUrl = tunnel.publicUrl
+        ? `${tunnel.publicUrl}/meet/${roomId}`
+        : isLocalhost && lanBaseUrl
+        ? `${lanBaseUrl}/meet/${roomId}`
+        : window.location.href;
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
@@ -131,7 +139,7 @@ export function MeetingLobby({
           <GenMeetLogo />
         </Link>
 
-        <div className="flex items-center gap-3 text-sm text-[#5f6368]">
+        <div className="flex flex-wrap items-center justify-end gap-2 text-sm text-[#5f6368]">
           <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-[#f1f3f4] px-3 py-1 font-mono text-xs text-[#3c4043]">
             <span
               className={`h-2 w-2 rounded-full ${
@@ -141,6 +149,42 @@ export function MeetingLobby({
             />
             {roomId}
           </span>
+          {tunnel.publicUrl ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#ceead6] bg-[#e6f4ea] px-3 py-1 text-xs font-semibold text-[#0d652d]">
+              <Globe className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="hidden md:inline">5G HTTPS Live</span>
+              {tunnel.canManage && (
+                <button
+                  type="button"
+                  onClick={() => void tunnel.stopTunnel()}
+                  aria-label="Stop public HTTPS tunnel"
+                  className="ml-1 inline-flex items-center gap-0.5 rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-[#b3261e] hover:bg-[#fce8e6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b3261e]"
+                >
+                  <Power className="h-3 w-3" aria-hidden="true" />
+                  Stop
+                </button>
+              )}
+            </span>
+          ) : tunnel.canManage ? (
+            <button
+              type="button"
+              disabled={tunnel.isBusy}
+              onClick={() => void tunnel.startTunnel()}
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#137333] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#0d652d] disabled:cursor-wait disabled:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137333]"
+            >
+              {tunnel.isBusy ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" aria-hidden="true" />
+                  {tunnel.status === "downloading" ? "Downloading..." : "Starting HTTPS..."}
+                </>
+              ) : (
+                <>
+                  <Globe className="h-3.5 w-3.5" aria-hidden="true" />
+                  Go Public (5G HTTPS)
+                </>
+              )}
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={handleCopyLink}
@@ -154,12 +198,23 @@ export function MeetingLobby({
             ) : (
               <>
                 <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-                Copy link
+                {tunnel.publicUrl ? "Copy 5G HTTPS link" : "Copy link"}
               </>
             )}
           </button>
         </div>
       </header>
+
+      {tunnel.error && (
+        <div
+          role="alert"
+          className="mx-auto mt-3 flex w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-8"
+        >
+          <p className="w-full rounded-xl border border-[#f2b8b5] bg-[#fce8e6] px-3.5 py-2 text-xs text-[#b3261e]">
+            Public HTTPS tunnel error: {tunnel.error}
+          </p>
+        </div>
+      )}
 
       {/* Main two-column green room */}
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-8 px-4 py-8 lg:flex-row lg:gap-12 lg:px-8">

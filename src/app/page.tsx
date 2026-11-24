@@ -9,10 +9,13 @@ import {
   ChevronRight,
   Clock,
   Copy,
+  Globe,
   Keyboard,
   Link2,
+  Loader2,
   Mic,
   Plus,
+  Power,
   ShieldCheck,
   Sparkles,
   Video,
@@ -20,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import { GenMeetLogo } from "@/components/GenMeetLogo";
+import { usePublicTunnel } from "@/hooks/usePublicTunnel";
 import {
   generateMeetingCode,
   getAvatarColor,
@@ -69,6 +73,7 @@ export default function HomePage() {
   const [laterLinkCode, setLaterLinkCode] = useState<string | null>(null);
   const [copiedLaterLink, setCopiedLaterLink] = useState(false);
   const [copiedLan, setCopiedLan] = useState(false);
+  const [copiedPublic, setCopiedPublic] = useState(false);
   const [slideIndex, setSlideIndex] = useState(0);
   const [recentRooms, setRecentRooms] = useState<string[]>([]);
   const [instanceNet, setInstanceNet] = useState<{
@@ -79,6 +84,7 @@ export default function HomePage() {
     latestVersion: string;
     releaseUrl: string;
   } | null>(null);
+  const tunnel = usePublicTunnel();
 
   useEffect(() => {
     const saved = window.localStorage.getItem("genmeet:displayName");
@@ -182,12 +188,13 @@ export default function HomePage() {
   const isLocalhost =
     typeof window !== "undefined" &&
     (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-  const shareBaseOrigin =
-    isLocalhost && instanceNet?.lanUrls[0]
-      ? instanceNet.lanUrls[0]
-      : typeof window !== "undefined"
-      ? window.location.origin
-      : "";
+  const shareBaseOrigin = tunnel.publicUrl
+    ? tunnel.publicUrl
+    : isLocalhost && instanceNet?.lanUrls[0]
+    ? instanceNet.lanUrls[0]
+    : typeof window !== "undefined"
+    ? window.location.origin
+    : "";
   const laterFullUrl = laterLinkCode
     ? `${shareBaseOrigin}/meet/${laterLinkCode}`
     : "";
@@ -213,6 +220,16 @@ export default function HomePage() {
     }
   };
 
+  const handleCopyPublicUrl = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedPublic(true);
+      window.setTimeout(() => setCopiedPublic(false), 2000);
+    } catch {
+      // Ignore clipboard failures
+    }
+  };
+
   const activeSlide = CAROUSEL_SLIDES[slideIndex];
 
   return (
@@ -226,6 +243,12 @@ export default function HomePage() {
               <span className="hidden items-center gap-1.5 rounded-full border border-[#d2e3fc] bg-[#f1f6fe] px-3 py-1 text-xs font-medium text-[#1967d2] md:inline-flex">
                 <span className="h-2 w-2 rounded-full bg-[#1e8e3e]" aria-hidden="true" />
                 Node {instanceNet.virtualIp}
+              </span>
+            )}
+            {tunnel.publicUrl && (
+              <span className="hidden items-center gap-1.5 rounded-full border border-[#ceead6] bg-[#e6f4ea] px-3 py-1 text-xs font-medium text-[#0d652d] sm:inline-flex">
+                <Globe className="h-3.5 w-3.5" aria-hidden="true" />
+                Public HTTPS Live
               </span>
             )}
             {updateInfo && (
@@ -424,13 +447,13 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* Instance & LAN info card */}
-          <div className="mt-8 rounded-2xl border border-[#e8eaed] bg-white/90 p-4 shadow-xs">
+          {/* Instance, LAN & Public 5G HTTPS card */}
+          <div className="mt-8 rounded-2xl border border-[#e8eaed] bg-white/90 p-4 shadow-xs space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#5f6368]">
               <div className="flex items-center gap-2">
                 <Wifi className="h-4 w-4 text-[#1a73e8]" aria-hidden="true" />
                 <span className="font-medium text-[#3c4043]">
-                  Share across tabs or your local network
+                  Connect PC &amp; Phone (Same Wi-Fi or 5G / Any Wi-Fi)
                 </span>
               </div>
               {instanceNet && (
@@ -440,10 +463,101 @@ export default function HomePage() {
               )}
             </div>
 
+            {/* Public HTTPS (5G / Different Wi-Fi) section */}
+            {tunnel.publicUrl ? (
+              <div className="rounded-xl border border-[#ceead6] bg-[#e6f4ea]/70 p-3 space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0d652d]">
+                    <Globe className="h-3.5 w-3.5" aria-hidden="true" />
+                    Public HTTPS Active (5G / Any Wi-Fi + Camera &amp; Mic)
+                  </span>
+                  {tunnel.canManage && (
+                    <button
+                      type="button"
+                      onClick={() => void tunnel.stopTunnel()}
+                      className="inline-flex items-center gap-1 rounded-full border border-[#f2b8b5] bg-white px-2.5 py-1 text-[11px] font-medium text-[#b3261e] hover:bg-[#fce8e6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b3261e]"
+                    >
+                      <Power className="h-3 w-3" aria-hidden="true" />
+                      Stop Public Link
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 shadow-2xs">
+                  <span className="min-w-0 truncate font-mono text-xs text-[#0d652d]">
+                    {tunnel.publicUrl}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => void handleCopyPublicUrl(tunnel.publicUrl!)}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#e6f4ea] px-2.5 py-1 text-[11px] font-semibold text-[#0d652d] hover:bg-[#ceead6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137333]"
+                  >
+                    {copiedPublic ? (
+                      <>
+                        <Check className="h-3 w-3" aria-hidden="true" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3 w-3" aria-hidden="true" />
+                        Copy Public URL
+                      </>
+                    )}
+                  </button>
+                </div>
+                <p className="text-[11px] leading-relaxed text-[#0d652d]">
+                  Works on <strong>same Wi-Fi, different Wi-Fi, or 5G cellular data</strong> — paste this HTTPS URL into GenMeet Mobile or Safari/Chrome.
+                </p>
+              </div>
+            ) : tunnel.canManage ? (
+              <div className="rounded-xl border border-[#d2e3fc] bg-[#f4f8ff] p-3 space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-[#174ea6]">
+                      Need to join from 5G, another Wi-Fi, or enable phone camera?
+                    </p>
+                    <p className="text-[11px] text-[#3c4043]">
+                      Starts a free Cloudflare HTTPS link automatically in one click.
+                    </p>
+                  </div>
+                  {tunnel.isBusy ? (
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-[#1967d2] shadow-2xs">
+                        <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" aria-hidden="true" />
+                        {tunnel.status === "downloading"
+                          ? "Downloading tunnel helper..."
+                          : "Starting HTTPS tunnel..."}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => void tunnel.stopTunnel()}
+                        className="rounded-full border border-[#dadce0] bg-white px-2.5 py-1.5 text-xs font-medium text-[#3c4043] hover:bg-[#f1f3f4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1a73e8]"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => void tunnel.startTunnel()}
+                      className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#137333] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#0d652d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#137333] focus-visible:ring-offset-1"
+                    >
+                      <Globe className="h-3.5 w-3.5" aria-hidden="true" />
+                      Go Public (5G / Internet HTTPS)
+                    </button>
+                  )}
+                </div>
+                {tunnel.error && (
+                  <p role="alert" className="rounded-lg bg-[#fce8e6] px-2.5 py-1.5 text-[11px] text-[#b3261e]">
+                    {tunnel.error}
+                  </p>
+                )}
+              </div>
+            ) : null}
+
             {instanceNet?.lanUrls[0] ? (
-              <div className="mt-2.5 space-y-2">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2 rounded-xl bg-[#f8f9fa] px-3 py-2">
-                  <span className="truncate font-mono text-xs text-[#3c4043]">
+                  <span className="min-w-0 truncate font-mono text-xs text-[#3c4043]">
                     {instanceNet.lanUrls[0]}
                   </span>
                   <button
@@ -465,15 +579,15 @@ export default function HomePage() {
                   </button>
                 </div>
                 <p className="text-[11px] leading-relaxed text-[#5f6368]">
-                  <strong>PC &harr; Phone:</strong> Connect both to the same Wi-Fi, enter{" "}
+                  <strong>Same Wi-Fi only (LAN):</strong> Enter{" "}
                   <code className="rounded bg-[#f1f3f4] px-1 py-0.5 font-mono text-[#202124]">
                     {instanceNet.lanUrls[0]}
                   </code>{" "}
-                  (never <code className="rounded bg-[#f1f3f4] px-1 py-0.5 font-mono">localhost</code>) in GenMeet Mobile or your phone browser, then enter the meeting code.
+                  (never <code className="rounded bg-[#f1f3f4] px-1 py-0.5 font-mono">localhost</code>) in GenMeet Mobile or your phone browser. For <strong>5G or another Wi-Fi</strong>, use <strong>Go Public (HTTPS)</strong> above.
                 </p>
               </div>
             ) : (
-              <p className="mt-2 text-xs text-[#5f6368]">
+              <p className="text-xs text-[#5f6368]">
                 Open <code className="rounded bg-[#f1f3f4] px-1 py-0.5">/meet/abc-defg-hij</code> in another browser tab to test live video &amp; chat.
               </p>
             )}
