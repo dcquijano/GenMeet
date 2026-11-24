@@ -23,8 +23,8 @@ var DefaultIconPNG []byte
 
 const (
 	AppShortName      = "GenMeet"
-	AppFullTitle      = "GenMeet (v0.1.4)"
-	AppVersion        = "0.1.4"
+	AppFullTitle      = "GenMeet (v0.1.5)"
+	AppVersion        = "0.1.5"
 	AppAuthor         = "Darius Cumpio"
 	DefaultInstallDir = `C:\GenMeet`
 	UninstallRegKey   = `Software\Microsoft\Windows\CurrentVersion\Uninstall\GenMeet`
@@ -200,6 +200,40 @@ func imagePath(pid uint32) string {
 		return ""
 	}
 	return syscall.UTF16ToString(buf[:n])
+}
+
+// StopGenMeetServer terminates both GenMeet companion executables inside root AND
+// the background Node.js server process (tracked by logs/server.pid or listening on the configured port).
+func StopGenMeetServer(root string, selfPID uint32) {
+	KillProcessesInDir(root, selfPID)
+
+	// 1. Stop PID recorded in logs/server.pid
+	pidFile := filepath.Join(root, "logs", "server.pid")
+	if raw, err := os.ReadFile(pidFile); err == nil {
+		pidStr := strings.TrimSpace(string(raw))
+		if pidStr != "" {
+			cmd := exec.Command("taskkill.exe", "/F", "/T", "/PID", pidStr)
+			cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: 0x08000000}
+			_ = cmd.Run()
+		}
+		_ = os.Remove(pidFile)
+	}
+
+	// 2. Stop any node.exe process listening on this installation's configured port
+	port := 3000
+	if raw, err := os.ReadFile(filepath.Join(root, "genmeet.instance.json")); err == nil {
+		var cfg InstanceConfig
+		if json.Unmarshal(raw, &cfg) == nil && cfg.Port >= 1024 && cfg.Port <= 65535 {
+			port = cfg.Port
+		}
+	}
+	ps := fmt.Sprintf(
+		"$pids = Get-NetTCPConnection -LocalPort %d -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique; foreach ($p in $pids) { $proc = Get-Process -Id $p -ErrorAction SilentlyContinue; if ($proc -and $proc.ProcessName -match 'node|tsx') { Stop-Process -Id $p -Force -ErrorAction SilentlyContinue } }",
+		port,
+	)
+	cmd := exec.Command("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps)
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: 0x08000000}
+	_ = cmd.Run()
 }
 
 func CreateShortcut(linkPath, targetPath, args, workDir, iconPath, desc string) error {

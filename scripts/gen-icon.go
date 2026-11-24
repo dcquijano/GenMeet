@@ -15,7 +15,7 @@ import (
 
 const appManifestXML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-  <assemblyIdentity version="0.1.4.0" processorArchitecture="amd64" name="DariusCumpio.GenMeet" type="win32"/>
+  <assemblyIdentity version="0.1.5.0" processorArchitecture="amd64" name="DariusCumpio.GenMeet" type="win32"/>
   <description>GenMeet Real-Time WebRTC Meetings</description>
   <dependency>
     <dependentAssembly>

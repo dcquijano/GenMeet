@@ -597,9 +597,9 @@ func performUninstall(opts uninstallOptions, report func(pct int, msg string)) {
 	}
 
 	if opts.stopProcesses {
-		step(15, "Stopping any running GenMeet processes in "+opts.dir+"...")
-		winui.KillProcessesInDir(opts.dir, uint32(os.Getpid()))
-		time.Sleep(350 * time.Millisecond)
+		step(15, "Stopping any running GenMeet server processes in "+opts.dir+"...")
+		winui.StopGenMeetServer(opts.dir, uint32(os.Getpid()))
+		time.Sleep(400 * time.Millisecond)
 	}
 
 	if opts.removeRegistry {

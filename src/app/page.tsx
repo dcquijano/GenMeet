@@ -441,27 +441,36 @@ export default function HomePage() {
             </div>
 
             {instanceNet?.lanUrls[0] ? (
-              <div className="mt-2.5 flex items-center justify-between gap-2 rounded-xl bg-[#f8f9fa] px-3 py-2">
-                <span className="truncate font-mono text-xs text-[#3c4043]">
-                  {instanceNet.lanUrls[0]}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => void handleCopyLanUrl(instanceNet.lanUrls[0])}
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-[#1a73e8] shadow-xs hover:bg-[#f1f6fe]"
-                >
-                  {copiedLan ? (
-                    <>
-                      <Check className="h-3 w-3 text-[#1e8e3e]" aria-hidden="true" />
-                      Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3 w-3" aria-hidden="true" />
-                      Copy LAN URL
-                    </>
-                  )}
-                </button>
+              <div className="mt-2.5 space-y-2">
+                <div className="flex items-center justify-between gap-2 rounded-xl bg-[#f8f9fa] px-3 py-2">
+                  <span className="truncate font-mono text-xs text-[#3c4043]">
+                    {instanceNet.lanUrls[0]}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => void handleCopyLanUrl(instanceNet.lanUrls[0])}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-[#1a73e8] shadow-xs hover:bg-[#f1f6fe]"
+                  >
+                    {copiedLan ? (
+                      <>
+                        <Check className="h-3 w-3 text-[#1e8e3e]" aria-hidden="true" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3 w-3" aria-hidden="true" />
+                        Copy LAN URL
+                      </>
+                    )}
+                  </button>
+                </div>
+                <p className="text-[11px] leading-relaxed text-[#5f6368]">
+                  <strong>PC &harr; Phone:</strong> Connect both to the same Wi-Fi, enter{" "}
+                  <code className="rounded bg-[#f1f3f4] px-1 py-0.5 font-mono text-[#202124]">
+                    {instanceNet.lanUrls[0]}
+                  </code>{" "}
+                  (never <code className="rounded bg-[#f1f3f4] px-1 py-0.5 font-mono">localhost</code>) in GenMeet Mobile or your phone browser, then enter the meeting code.
+                </p>
               </div>
             ) : (
               <p className="mt-2 text-xs text-[#5f6368]">

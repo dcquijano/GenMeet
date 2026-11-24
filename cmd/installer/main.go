@@ -772,17 +772,19 @@ func performInstall(opts installOptions, report func(pct int, msg string)) (winu
 		}
 	}
 
-	step(8, "Stopping any running GenMeet processes in "+opts.dir+"...")
-	winui.KillProcessesInDir(opts.dir, uint32(os.Getpid()))
-	time.Sleep(250 * time.Millisecond)
+	step(8, "Stopping any running GenMeet server processes in "+opts.dir+"...")
+	winui.StopGenMeetServer(opts.dir, uint32(os.Getpid()))
+	time.Sleep(400 * time.Millisecond)
 
 	if err := os.MkdirAll(opts.dir, 0o755); err != nil {
 		return winui.InstanceConfig{}, fmt.Errorf("create install dir: %w", err)
 	}
 
 	if len(embeddedPayloadZip) > 0 {
-		step(22, "Extracting GenMeet application bundle...")
-		// Remove legacy next.config.ts so Next.js uses next.config.mjs without runtime TypeScript install
+		step(22, "Cleaning previous build & extracting GenMeet application bundle...")
+		// Remove old .next bundle and legacy next.config.ts so stale CSS/JS hashes never mix across upgrades
+		_ = os.RemoveAll(filepath.Join(opts.dir, ".next"))
+		_ = os.Remove(filepath.Join(opts.dir, "tsconfig.tsbuildinfo"))
 		_ = os.Remove(filepath.Join(opts.dir, "next.config.ts"))
 		if err := extractZipBytes(embeddedPayloadZip, opts.dir); err != nil {
 			return winui.InstanceConfig{}, fmt.Errorf("extract payload: %w", err)

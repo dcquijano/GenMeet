@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
@@ -116,6 +117,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             webChromeClient = object : WebChromeClient() {
+                override fun getDefaultVideoPoster(): Bitmap {
+                    // Return a 1x1 transparent bitmap so Android WebView never draws a giant grey play icon
+                    return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+                }
+
                 override fun onPermissionRequest(request: PermissionRequest) {
                     runOnUiThread {
                         handleWebRtcPermission(request)
@@ -395,7 +401,12 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        val portPart = if (uri.port != -1) ":${uri.port}" else ""
+        val isIpv4Host = IPV4_ONLY_REGEX.matches(host)
+        val portPart = when {
+            uri.port != -1 -> ":${uri.port}"
+            scheme == "http" && isIpv4Host -> ":3000"
+            else -> ""
+        }
         val baseUrl = "$scheme://$host$portPart"
 
         // Extract /meet/<code> if pasted into Server URL
@@ -423,6 +434,7 @@ class MainActivity : AppCompatActivity() {
         connectScroll.visibility = View.GONE
         webView.visibility = View.VISIBLE
         switchServerButton.visibility = View.VISIBLE
+        webView.clearCache(true)
         webView.loadUrl(url)
     }
 
@@ -527,5 +539,6 @@ class MainActivity : AppCompatActivity() {
         private const val KEY_SERVER_URL = "server_url"
         private val MEETING_CODE_REGEX = Regex("^[a-z0-9]{2,12}(-[a-z0-9]{2,12}){1,3}$")
         private val IPV4_HOST_REGEX = Regex("^\\d{1,3}(\\.\\d{1,3}){3}(:\\d{1,5})?$")
+        private val IPV4_ONLY_REGEX = Regex("^\\d{1,3}(\\.\\d{1,3}){3}$")
     }
 }

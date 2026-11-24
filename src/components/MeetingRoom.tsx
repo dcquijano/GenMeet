@@ -625,10 +625,17 @@ export function MeetingRoom({
               <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5 text-sm">
                 <div>
                   <h3 className="text-xs font-semibold uppercase tracking-wide text-[#5f6368]">
-                    Joining info
+                    Joining info (LAN / Mobile ready)
                   </h3>
                   <p className="mt-2 break-all rounded-xl bg-[#f8f9fa] p-3 font-mono text-xs text-[#3c4043]">
-                    {typeof window !== "undefined" ? window.location.href : `/meet/${roomId}`}
+                    {typeof window !== "undefined" &&
+                    (window.location.hostname === "localhost" ||
+                      window.location.hostname === "127.0.0.1") &&
+                    instanceNet?.lanUrls[0]
+                      ? `${instanceNet.lanUrls[0]}/meet/${roomId}`
+                      : typeof window !== "undefined"
+                      ? window.location.href
+                      : `/meet/${roomId}`}
                   </p>
                   <button
                     type="button"
@@ -669,6 +676,24 @@ export function MeetingRoom({
                   <p>
                     Shortcuts: <kbd className="rounded bg-[#f1f3f4] px-1.5 py-0.5">Ctrl+D</kbd> mute,{" "}
                     <kbd className="rounded bg-[#f1f3f4] px-1.5 py-0.5">Ctrl+E</kbd> camera.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-[#d2e3fc] bg-[#f4f8ff] p-3.5 text-xs text-[#3c4043] space-y-1.5">
+                  <p className="font-semibold text-[#1967d2]">Connect PC &harr; Phone (Same Wi-Fi)</p>
+                  <p>
+                    <strong>PC &rarr; Phone:</strong> Open <strong>GenMeet Mobile</strong> on your phone, paste{" "}
+                    <code className="rounded bg-white px-1 py-0.5 font-mono">
+                      {instanceNet?.lanUrls[0] ?? "http://<PC-IP>:3000"}
+                    </code>{" "}
+                    as Server URL and <code className="rounded bg-white px-1 py-0.5 font-mono">{roomId}</code> as Meeting Code.
+                  </p>
+                  <p>
+                    <strong>Phone &rarr; PC:</strong> Start a room on your phone, then enter its code on your PC at{" "}
+                    <code className="rounded bg-white px-1 py-0.5 font-mono">http://localhost:3000</code>.
+                  </p>
+                  <p className="text-[11px] text-[#5f6368]">
+                    For live mobile camera &amp; mic over Wi-Fi/internet, use an HTTPS tunnel (e.g. Cloudflare Tunnel).
                   </p>
                 </div>
               </div>

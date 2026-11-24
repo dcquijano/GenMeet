@@ -1,4 +1,6 @@
+import fs from "node:fs";
 import http from "node:http";
+import path from "node:path";
 import next from "next";
 import { Server as SocketIOServer } from "socket.io";
 import { DEFAULT_INSTANCE_CONFIG_PATH, getInstanceNetworkInfo } from "./src/lib/instance-info";
@@ -12,6 +14,29 @@ const instanceInfo = getInstanceNetworkInfo(
   Number.isFinite(envPort) ? envPort : undefined
 );
 const port = instanceInfo.port;
+const pidFilePath = path.join(process.cwd(), "logs", "server.pid");
+
+function writePidFile() {
+  try {
+    fs.mkdirSync(path.dirname(pidFilePath), { recursive: true });
+    fs.writeFileSync(pidFilePath, `${process.pid}\n`, "utf8");
+  } catch {
+    // Non-fatal in read-only environments
+  }
+}
+
+function removePidFile() {
+  try {
+    if (fs.existsSync(pidFilePath)) {
+      const stored = fs.readFileSync(pidFilePath, "utf8").trim();
+      if (stored === String(process.pid)) {
+        fs.unlinkSync(pidFilePath);
+      }
+    }
+  } catch {
+    // Ignore cleanup errors
+  }
+}
 
 async function main() {
   const app = next({ dev: !isProd, hostname, port });
@@ -34,6 +59,7 @@ async function main() {
   signaling.attach(io);
 
   httpServer.listen(port, hostname, () => {
+    writePidFile();
     const liveInfo = getInstanceNetworkInfo(DEFAULT_INSTANCE_CONFIG_PATH, port);
     console.log(`GenMeet ready (${isProd ? "production" : "development"})`);
     console.log(`  Local URL   : ${liveInfo.localUrl}`);
@@ -45,6 +71,7 @@ async function main() {
   });
 
   const shutdown = () => {
+    removePidFile();
     io.close(() => {
       httpServer.close(() => {
         process.exit(0);
@@ -54,9 +81,11 @@ async function main() {
 
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
+  process.on("exit", removePidFile);
 }
 
 main().catch((err) => {
+  removePidFile();
   console.error("Failed to start GenMeet server:", err);
   process.exit(1);
 });

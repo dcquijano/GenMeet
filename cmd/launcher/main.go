@@ -100,7 +100,7 @@ func main() {
 			openTerminal(root, cfg)
 			return
 		case "--stop-all":
-			winui.KillProcessesInDir(root, uint32(os.Getpid()))
+			winui.StopGenMeetServer(root, uint32(os.Getpid()))
 			return
 		}
 	}

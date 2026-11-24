@@ -80,10 +80,11 @@ export function VideoTile({
         autoPlay
         playsInline
         muted={isLocal}
+        poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
         className={`h-full w-full ${
           screenSharing ? "object-contain bg-[#141517]" : "object-cover"
         } ${mirrored && !screenSharing ? "-scale-x-100" : ""} ${
-          showVideo ? "opacity-100" : "opacity-0 pointer-events-none absolute inset-0"
+          showVideo ? "block" : "hidden"
         }`}
       />
 

@@ -177,8 +177,9 @@ export function MeetingLobby({
               autoPlay
               playsInline
               muted
+              poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
               className={`h-full w-full object-cover ${mirrored ? "-scale-x-100" : ""} ${
-                showCamera ? "opacity-100" : "opacity-0 pointer-events-none"
+                showCamera ? "block" : "hidden"
               }`}
             />
 

@@ -409,8 +409,8 @@ func applyUpgrade(root string, info *remoteVersionInfo, token string, report fun
 	}
 
 	step(65, "Stopping running GenMeet server processes in "+root+"...")
-	winui.KillProcessesInDir(root, uint32(os.Getpid()))
-	time.Sleep(400 * time.Millisecond)
+	winui.StopGenMeetServer(root, uint32(os.Getpid()))
+	time.Sleep(500 * time.Millisecond)
 
 	step(78, "Applying in-place upgrade (preserving genmeet.instance.json & logs)...")
 	cmd := exec.Command(setupExe, "--silent", "--force", "--dir="+root)

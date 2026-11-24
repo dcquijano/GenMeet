@@ -655,9 +655,9 @@ func performRepair(opts repairOptions, report func(pct int, msg string)) (winui.
 		return winui.InstanceConfig{}, fmt.Errorf("GenMeet installation not found at %s", opts.dir)
 	}
 
-	step(12, "Stopping any running GenMeet processes in "+opts.dir+"...")
-	winui.KillProcessesInDir(opts.dir, uint32(os.Getpid()))
-	time.Sleep(300 * time.Millisecond)
+	step(12, "Stopping any running GenMeet server processes in "+opts.dir+"...")
+	winui.StopGenMeetServer(opts.dir, uint32(os.Getpid()))
+	time.Sleep(400 * time.Millisecond)
 
 	if winui.FileExists(filepath.Join(opts.dir, "next.config.mjs")) {
 		_ = os.Remove(filepath.Join(opts.dir, "next.config.ts"))
